@@ -6,25 +6,34 @@ import { validateConstraints, evaluateAccuracy } from './validator.js'
 dotenv.config()
 
 /**
- * Providers configuration.
+ * Available models based on active Groq and Gemini quotas.
  */
 const PROVIDERS = [
   {
-    id: 'groq-llama-3.1-8b',
-    name: 'Groq LLaMA 3.1 8B Instant',
+    id: 'groq-gpt-oss-20b',
+    name: 'Groq GPT-OSS 20B (Fast)',
     type: 'openai-compatible',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: process.env.GROQ_API_KEY,
-    model: 'llama-3.1-8b-instant',
+    model: 'openai/gpt-oss-20b',
     temperature: 0.1,
   },
   {
-    id: 'groq-llama-3.3-70b',
-    name: 'Groq LLaMA 3.3 70B Versatile',
+    id: 'groq-qwen-27b',
+    name: 'Groq Qwen 3.8 27B (Alternative)',
     type: 'openai-compatible',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: process.env.GROQ_API_KEY,
-    model: 'llama-3.3-70b-versatile',
+    model: 'qwen/qwen3.8-27b',
+    temperature: 0.1,
+  },
+  {
+    id: 'groq-gpt-oss-120b',
+    name: 'Groq GPT-OSS 120B (High Quality)',
+    type: 'openai-compatible',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    key: process.env.GROQ_API_KEY,
+    model: 'openai/gpt-oss-120b',
     temperature: 0.1,
   },
   {
@@ -35,21 +44,15 @@ const PROVIDERS = [
     key: process.env.GEMINI_API_KEY,
     temperature: 0.1,
   },
-  {
-    id: 'gemini-2.0-flash',
-    name: 'Google Gemini 2.0 Flash',
-    type: 'gemini',
-    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-    key: process.env.GEMINI_API_KEY,
-    temperature: 0.1,
-  },
 ]
 
 async function callProvider(provider, prompt) {
   const t0 = performance.now()
 
   if (provider.type === 'gemini') {
-    if (!provider.key) throw new Error('Missing GEMINI_API_KEY in .env')
+    if (!provider.key || provider.key === 'your_gemini_api_key_here') {
+      return { status: 401, latencyMs: 0, rawOutput: null, error: 'Chave Gemini não configurada' }
+    }
     const fullUrl = `${provider.url}?key=${provider.key}`
     const response = await fetch(fullUrl, {
       method: 'POST',
@@ -76,7 +79,7 @@ async function callProvider(provider, prompt) {
     return { status, latencyMs, rawOutput, error: null }
   }
 
-  // OpenAI-compatible format (Groq / Mistral)
+  // OpenAI-compatible format (Groq)
   if (!provider.key) throw new Error(`Missing API key for ${provider.name} in .env`)
   const response = await fetch(provider.url, {
     method: 'POST',
@@ -124,8 +127,8 @@ async function runBenchmark() {
 
   for (const provider of PROVIDERS) {
     console.log(`\n▶️ Testing: ${provider.name}...`)
-    if (!provider.key) {
-      console.log(`⚠️ Skipped: API key not set in .env`)
+    if (!provider.key || provider.key === 'your_gemini_api_key_here') {
+      console.log(`⚠️ Skipped: API key not set or invalid in .env`)
       continue
     }
 

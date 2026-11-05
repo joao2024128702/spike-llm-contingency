@@ -7,38 +7,26 @@ const TEST_PROMPT = 'Quero terças e quintas livres, aulas à tarde e blocos seg
 
 const PROVIDERS = [
   {
-    id: 'groq-llama-3.1-8b',
-    name: 'Groq LLaMA 3.1 8B Instant',
+    id: 'groq-gpt-oss-20b',
+    name: 'Groq GPT-OSS 20B (Fast)',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: process.env.GROQ_API_KEY,
-    model: 'llama-3.1-8b-instant',
+    model: 'openai/gpt-oss-20b',
     type: 'openai',
   },
   {
-    id: 'gemini-1.5-flash',
-    name: 'Google Gemini 1.5 Flash',
-    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-    key: process.env.GEMINI_API_KEY,
-    type: 'gemini',
+    id: 'groq-qwen-27b',
+    name: 'Groq Qwen 3.8 27B',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    key: process.env.GROQ_API_KEY,
+    model: 'qwen/qwen3.8-27b',
+    type: 'openai',
   },
 ]
 
 async function sendRequest(provider) {
   const t0 = performance.now()
   try {
-    if (provider.type === 'gemini') {
-      const res = await fetch(`${provider.url}?key=${provider.key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ parts: [{ text: TEST_PROMPT }] }],
-          generationConfig: { responseMimeType: 'application/json' },
-        }),
-      })
-      return { status: res.status, latencyMs: Math.round(performance.now() - t0) }
-    }
-
     const res = await fetch(provider.url, {
       method: 'POST',
       headers: {
