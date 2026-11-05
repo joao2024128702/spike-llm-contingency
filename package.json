@@ -1,0 +1,26 @@
+{
+  "name": "spike-llm-contingency",
+  "version": "1.0.0",
+  "description": "Spike #67: Contingency benchmark of alternative LLM models for natural language schedule constraint extraction",
+  "type": "module",
+  "scripts": {
+    "benchmark": "node src/benchmark.js",
+    "stress": "node src/stressTest.js",
+    "all": "node src/benchmark.js && node src/stressTest.js"
+  },
+  "keywords": [
+    "llm",
+    "benchmark",
+    "groq",
+    "gemini",
+    "latency",
+    "schedulemaster",
+    "gps"
+  ],
+  "author": "GPS Group 35 (ISEC 2026/27)",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  }
+}
