@@ -5,9 +5,6 @@ import { validateConstraints, evaluateAccuracy } from './validator.js'
 
 dotenv.config()
 
-/**
- * Available models based on active Groq and Gemini quotas.
- */
 const PROVIDERS = [
   {
     id: 'groq-gpt-oss-20b',
@@ -20,7 +17,7 @@ const PROVIDERS = [
   },
   {
     id: 'groq-qwen-27b',
-    name: 'Groq Qwen 3.8 27B (Alternative)',
+    name: 'Groq Qwen 3.8 27B',
     type: 'openai-compatible',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: process.env.GROQ_API_KEY,
@@ -28,19 +25,10 @@ const PROVIDERS = [
     temperature: 0.1,
   },
   {
-    id: 'groq-gpt-oss-120b',
-    name: 'Groq GPT-OSS 120B (High Quality)',
-    type: 'openai-compatible',
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    key: process.env.GROQ_API_KEY,
-    model: 'openai/gpt-oss-120b',
-    temperature: 0.1,
-  },
-  {
-    id: 'gemini-1.5-flash',
-    name: 'Google Gemini 1.5 Flash',
+    id: 'gemini-2.5-flash',
+    name: 'Google Gemini 2.5 Flash',
     type: 'gemini',
-    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     key: process.env.GEMINI_API_KEY,
     temperature: 0.1,
   },
@@ -50,9 +38,6 @@ async function callProvider(provider, prompt) {
   const t0 = performance.now()
 
   if (provider.type === 'gemini') {
-    if (!provider.key || provider.key === 'your_gemini_api_key_here') {
-      return { status: 401, latencyMs: 0, rawOutput: null, error: 'Chave Gemini não configurada' }
-    }
     const fullUrl = `${provider.url}?key=${provider.key}`
     const response = await fetch(fullUrl, {
       method: 'POST',
@@ -80,7 +65,6 @@ async function callProvider(provider, prompt) {
   }
 
   // OpenAI-compatible format (Groq)
-  if (!provider.key) throw new Error(`Missing API key for ${provider.name} in .env`)
   const response = await fetch(provider.url, {
     method: 'POST',
     headers: {
@@ -127,8 +111,8 @@ async function runBenchmark() {
 
   for (const provider of PROVIDERS) {
     console.log(`\n▶️ Testing: ${provider.name}...`)
-    if (!provider.key || provider.key === 'your_gemini_api_key_here') {
-      console.log(`⚠️ Skipped: API key not set or invalid in .env`)
+    if (!provider.key) {
+      console.log(`⚠️ Skipped: API key missing`)
       continue
     }
 
